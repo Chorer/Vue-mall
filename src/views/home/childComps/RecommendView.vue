@@ -28,8 +28,8 @@ export default {
     display: flex;
     width: 100%;
     text-align: center;
-    font-size: 12px;
-    padding: 10px 0 30px;
+    font-size: 13px;
+    padding: 15px 0;
     border-bottom: 8px solid #eee;
   }
   .recommend-item{
