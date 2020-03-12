@@ -3,116 +3,17 @@
     <nav-bar class="home-nav">
       <div slot='center'>购物街</div>
     </nav-bar>
-    <home-swiper :banners="banners"/>
-    <recommend-view :recommends="recommends"/>>
-    <feature-view/>
-    <tab-control 
-      class="tab-control"
-      :titles="['流行','新款','精选']" 
-      @tabClick='tabClick'/>
-    <goods-list :goods = "showGoods"/>
-    <ul>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-      <li>test</li>
-    </ul>
+    <scroll class="content" ref="scroll" :probe-type="3" @scroll="showTop">
+      <home-swiper :banners="banners"/>
+      <recommend-view :recommends="recommends"/>
+      <feature-view/>
+      <tab-control 
+        class="tab-control"
+        :titles="['流行','新款','精选']" 
+        @tabClick='tabClick'/>
+      <goods-list :goods = "showGoods"/>
+    </scroll>
+    <back-top @click.native="backClick" v-show="isShow"/>
   </div>
 </template>
 
@@ -125,6 +26,8 @@ import FeatureView from './childComps/FeatureView'
 import NavBar from 'components/common/navbar/NavBar'
 import TabControl from 'components/content/tabControl/TabControl'
 import GoodsList from 'components/content/goods/GoodsList'
+import Scroll from 'components/common/scroll/Scroll'
+import BackTop from 'components/content/backTop/BackTop'
 
 import { getHomeMultidata,getHomeGoods } from 'network/home'
 
@@ -136,7 +39,9 @@ export default {
     FeatureView,
     NavBar,
     TabControl,
-    GoodsList
+    GoodsList,
+    Scroll,
+    BackTop
   },
   data(){
     return {
@@ -147,7 +52,8 @@ export default {
         'new': {page:0,list:[]},
         'sell': {page:0,list:[]}
       },
-      currentType:'pop'
+      currentType:'pop',
+      isShow: false
     }
   },
   created(){
@@ -178,6 +84,12 @@ export default {
         break
      }
    },
+   backClick(){
+     this.$refs.scroll.scrollToTop(0,0,500)
+   },
+   showTop(position){
+     this.isShow = -position.y > 1000
+   },
     /*
     网络请求
     */
@@ -198,21 +110,36 @@ export default {
 </script>
 
 <style scoped>
-#home{
-  padding-top: 44px;
-}
-.home-nav{
-  background-color: var(--color-tint);
-  color:#fff;
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  z-index: 9;
-}
-.tab-control{
-  position: sticky;
-  top: 44px;
-  z-index: 9;
-}
+  #home{
+    padding-top: 44px;
+    position: relative;
+    height: 100vh;
+  }
+  .home-nav{
+    background-color: var(--color-tint);
+    color:#fff;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 9;
+  }
+  .tab-control{
+    position: sticky;
+    top: 44px;
+    z-index: 9;
+  }
+  .content{
+    /* 
+    按照 BScroll 的要求，必须给 wrapper 一个小于 content 的高度，两种方法：
+    1.直接设置 warpper 高度为首屏减去上下两个 tabbar
+    2.设置 home 为首屏高度，好让 wrapper 相对于它绝对定位，通过上下值强行压缩
+     wrapper 的高度，本来它是等于 content 的高度，但现在比 content 高度小
+    */
+    position: absolute;
+    top: 44px;
+    bottom: 49px;
+    left: 0;
+    right: 0;
+  }
 </style>
