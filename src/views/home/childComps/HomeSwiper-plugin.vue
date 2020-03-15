@@ -3,7 +3,7 @@
       <!-- 这是轮播的图片 -->  
       <swiper-slide v-for="(item,index) in banners" :key="index">  
         <a :href="item.link">
-          <img :src="item.image" alt=""> 
+          <img :src="item.image" alt="" @load="imageLoad"> 
         </a>  
       </swiper-slide>  
       <!-- 这是轮播的小圆点 -->  
@@ -33,6 +33,7 @@ export default {
   data() {  
     const that = this
     return {
+      loadonce: false,
       swiperOption: {
         notNextTick: true,
         loop: true,
@@ -60,6 +61,14 @@ export default {
       swiper() {  
         return this.$refs.mySwiper.swiper;  
       }  
+  },
+  methods:{
+    imageLoad(){
+      if(!this.loadonce){
+        this.$emit('swiperImageLoad')
+        this.imageLoad = true
+      }
+    }
   }
 }  
 </script>

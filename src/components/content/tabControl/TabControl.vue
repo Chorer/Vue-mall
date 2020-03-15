@@ -36,6 +36,8 @@ export default {
 
 <style scoped>
   .tab-control{
+    position: relative;
+    z-index: 9;
     display: flex;
     text-align: center;
     font-size: 14px;

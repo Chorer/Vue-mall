@@ -3,14 +3,28 @@
     <nav-bar class="home-nav">
       <div slot='center'>购物街</div>
     </nav-bar>
-    <scroll class="content" ref="scroll" :probe-type="3" @scroll="showTop">
-      <home-swiper :banners="banners"/>
+    <tab-control 
+      class="tab-control"
+      :titles="['流行','新款','精选']" 
+      @tabClick='tabClick'
+      ref="tabcontrolMock"
+      v-show="isMockShow"
+    />
+    <scroll class="content" ref="scroll" 
+      :probe-type="3" 
+      :pull-up-load="true"
+      @scroll="contentScroll"
+      @pullingUp="loadMore"
+      >
+      <home-swiper :banners="banners" @swiperImageLoad="swiperImageLoad"/>
       <recommend-view :recommends="recommends"/>
       <feature-view/>
       <tab-control 
         class="tab-control"
         :titles="['流行','新款','精选']" 
-        @tabClick='tabClick'/>
+        @tabClick='tabClick'
+        ref="tabcontrol"
+        />
       <goods-list :goods = "showGoods"/>
     </scroll>
     <back-top @click.native="backClick" v-show="isShow"/>
@@ -30,6 +44,7 @@ import Scroll from 'components/common/scroll/Scroll'
 import BackTop from 'components/content/backTop/BackTop'
 
 import { getHomeMultidata,getHomeGoods } from 'network/home'
+import {debounce} from 'common/utils'
 
 export default {
   name:'Home',
@@ -53,7 +68,9 @@ export default {
         'sell': {page:0,list:[]}
       },
       currentType:'pop',
-      isShow: false
+      isShow: false,
+      tabOffsetTop:0,
+      isMockShow: false
     }
   },
   created(){
@@ -61,6 +78,15 @@ export default {
     this.getHomeGoods('pop')
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
+    // 监听图片加载事件，动态刷新 BScroll 以更新可滚动高度，防止可滚动高度在一开始
+    // 过小而无法滚动完全部图片
+  },
+  mounted(){
+    // 对刷新函数进行防抖处理，防止频繁刷新
+    let refresh = debounce(this.$refs.scroll.refresh,500)
+    this.$bus.$on('itemImageLoad',() => {
+      refresh()
+    })
   },
   computed:{
     showGoods(){
@@ -83,12 +109,26 @@ export default {
         this.currentType = 'sell'  
         break
      }
+     // 同步组件状态
+     this.$refs.tabcontrol.currentIndex = index
+     this.$refs.tabcontrolMock.currentIndex = index
    },
    backClick(){
      this.$refs.scroll.scrollToTop(0,0,500)
    },
-   showTop(position){
+   contentScroll(position){
+     // 1.动态控制按钮显示
      this.isShow = -position.y > 1000
+     // 2.动态控制 mock 导航条显示
+     this.isMockShow = -position.y > this.tabOffsetTop
+   },
+   loadMore(){
+     this.getHomeGoods(this.currentType)
+     this.$refs.scroll.finishPullUp()
+   },
+   swiperImageLoad(){
+     // 轮播图已有一张图片加载完毕，可以获取正确的 offsetTop
+     this.tabOffsetTop = this.$refs.tabcontrol.$el.offsetTop
    },
     /*
     网络请求
@@ -122,11 +162,6 @@ export default {
     left: 0;
     right: 0;
     top: 0;
-    z-index: 9;
-  }
-  .tab-control{
-    position: sticky;
-    top: 44px;
     z-index: 9;
   }
   .content{
