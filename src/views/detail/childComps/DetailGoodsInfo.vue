@@ -25,7 +25,7 @@ export default {
   },
   data(){
     return {
-      counter:0,
+      count:0,
       imageLength:0
     }
   },

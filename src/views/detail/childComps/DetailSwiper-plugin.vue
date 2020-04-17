@@ -11,8 +11,9 @@
 </template>
 
 <script>
-import {swiper,swiperSlide} from 'vue-awesome-swiper'
-require("swiper/dist/css/swiper.css");
+import "swiper/dist/css/swiper.css"
+
+import { swiperMixin } from 'common/mixin'
 
 export default {
   name:'DetailSwiper-plugin',
@@ -24,42 +25,7 @@ export default {
       }  
     }
   },
-  components:{
-    swiper,
-    swiperSlide
-  },
-  data() {  
-    const that = this
-    return {
-      loadonce: false,
-      swiperOption: {
-        notNextTick: true,
-        loop: true,
-        initialSlide: 0,
-        autoplay: {
-          delay: 1500,
-          disableOnInteraction: true
-        },
-        speed: 800,
-        on: {
-          slideChangeTransitionStart: function() {
-            that.imgIndex= this.realIndex - 1;
-          },
-        },
-        pagination: {
-          el: ".swiper-pagination",
-          clickable: true,
-          type: "bullets"
-        }
-      }
-    }
-  },  
-  //定义这个swiper对象  
-  computed: {  
-      swiper() {  
-        return this.$refs.mySwiper.swiper;  
-      }  
-  }
+  mixins:[swiperMixin]
 }  
 </script>
 

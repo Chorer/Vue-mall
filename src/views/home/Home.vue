@@ -41,10 +41,10 @@ import NavBar from 'components/common/navbar/NavBar'
 import TabControl from 'components/content/tabControl/TabControl'
 import GoodsList from 'components/content/goods/GoodsList'
 import Scroll from 'components/common/scroll/Scroll'
-import BackTop from 'components/content/backTop/BackTop'
 
 import { getHomeMultidata,getHomeGoods } from 'network/home'
-import {debounce} from 'common/utils'
+import { debounce } from 'common/utils'
+import { itemImgListenerMixin,backTopMixin } from 'common/mixin'
 
 export default {
   name:'Home',
@@ -55,8 +55,7 @@ export default {
     NavBar,
     TabControl,
     GoodsList,
-    Scroll,
-    BackTop
+    Scroll
   },
   data(){
     return {
@@ -68,11 +67,20 @@ export default {
         'sell': {page:0,list:[]}
       },
       currentType:'pop',
-      isShow: false,
       tabOffsetTop:0,
-      isMockShow: false
+      isMockShow: false,
+      saveY:0
     }
   },
+  activated() {
+    this.$refs.scroll.scrollToTop(0,this.saveY,0)
+    this.$refs.scroll.refresh()
+  },
+  deactivated(){
+    this.saveY = this.$refs.scroll.getCurrentY()
+    this.$bus.$off('itemImgLoad',this.itemImgListener)
+  },
+  mixins:[itemImgListenerMixin,backTopMixin],
   created(){
     this.getHomeMultidata()
     this.getHomeGoods('pop')
@@ -80,13 +88,6 @@ export default {
     this.getHomeGoods('sell')
     // 监听图片加载事件，动态刷新 BScroll 以更新可滚动高度，防止可滚动高度在一开始
     // 过小而无法滚动完全部图片
-  },
-  mounted(){
-    // 对刷新函数进行防抖处理，防止频繁刷新
-    let refresh = debounce(this.$refs.scroll.refresh,500)
-    this.$bus.$on('itemImageLoad',() => {
-      refresh()
-    })
   },
   computed:{
     showGoods(){
@@ -113,12 +114,9 @@ export default {
      this.$refs.tabcontrol.currentIndex = index
      this.$refs.tabcontrolMock.currentIndex = index
    },
-   backClick(){
-     this.$refs.scroll.scrollToTop(0,0,500)
-   },
    contentScroll(position){
      // 1.动态控制按钮显示
-     this.isShow = -position.y > 1000
+     this.showBack(position)
      // 2.动态控制 mock 导航条显示
      this.isMockShow = -position.y > this.tabOffsetTop
    },
