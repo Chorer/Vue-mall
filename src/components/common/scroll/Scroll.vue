@@ -53,6 +53,7 @@ export default {
       this.scroll && this.scroll.finishPullUp()
     },
     refresh(){
+      console.log('refresh')
       this.scroll && this.scroll.refresh()
     },
     getCurrentY(){
